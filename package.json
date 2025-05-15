@@ -1,0 +1,17 @@
+{
+  "name": "bun",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@morpho-org/bundler-sdk-viem": "3.0.0-next.18",
+    "viem": "^2.29.3",
+    "zod": "^3.24.4"
+  }
+}
