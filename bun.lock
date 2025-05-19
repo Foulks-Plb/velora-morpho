@@ -4,7 +4,7 @@
     "": {
       "name": "bun",
       "dependencies": {
-        "@morpho-org/bundler-sdk-viem": "3.0.0-next.18",
+        "@morpho-org/bundler-sdk-viem": "3.2.0-next.0",
         "viem": "^2.29.3",
         "zod": "^3.24.4",
       },
@@ -23,7 +23,7 @@
 
     "@morpho-org/blue-sdk-viem": ["@morpho-org/blue-sdk-viem@3.0.0", "", { "peerDependencies": { "@morpho-org/blue-sdk": "^3.0.0", "@morpho-org/morpho-ts": "^2.3.0", "viem": "^2.0.0" } }, "sha512-Rno637mk17CD0vFhHaCqc185wNh5WhT9l8Ans1hAnCB7Tf3b+cmQ06B8rbUu3JfV4qUkqUUF1jj+MAEHkTBjhw=="],
 
-    "@morpho-org/bundler-sdk-viem": ["@morpho-org/bundler-sdk-viem@3.0.0-next.18", "", { "peerDependencies": { "@morpho-org/blue-sdk": "^2.3.2", "@morpho-org/blue-sdk-viem": "^2.2.2", "@morpho-org/morpho-ts": "^2.2.0", "@morpho-org/simulation-sdk": "^2.1.4", "viem": "^2.0.0" } }, "sha512-Rn5o5Ksej5qVVl2KnPUl96h9sp8KRYmTxkmP8O6sbyDN/rQ3H40C6VsSowsNtpFlXUt/Fss5OWsKksLweMfqnw=="],
+    "@morpho-org/bundler-sdk-viem": ["@morpho-org/bundler-sdk-viem@3.2.0-next.0", "", { "peerDependencies": { "@morpho-org/blue-sdk": "^4.0.0-next.0", "@morpho-org/blue-sdk-viem": "^3.0.0", "@morpho-org/morpho-ts": "^2.4.0-next.0", "@morpho-org/simulation-sdk": "^3.1.0-next.0", "viem": "^2.0.0" } }, "sha512-LBfg+1C2eJgkoT/MyvIdXmo9DmHBkYar4p2N5VROL2MI3PgR9VhhCUQBbnppAK5xNZgO0m8GEG7M8NiRfeKeDQ=="],
 
     "@morpho-org/morpho-ts": ["@morpho-org/morpho-ts@2.3.0", "", {}, "sha512-VBi9ntCAKEoIjVejVSB2P2Gg62QOcBw1sBfES47i/EDswBuqpTXlX1QYclP3GoD1dQaZUpLulRrajGPrHHKDhQ=="],
 
