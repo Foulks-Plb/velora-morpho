@@ -26,43 +26,10 @@ const RPC_URL =
 const SRC_TOKEN = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"; // USDC
 const DEST_TOKEN = "0xdAC17F958D2ee523a2206206994597C13D831ec7"; // USDT
 
-// erc20Transfer generalAdapter1 => paraswapAdapter
-// buy
-//
-// actions.push(
-//   {
-//     type: "erc20Transfer",
-//     args: [
-//       srcToken, // sended token
-//       paraswapAdapter, // recipient
-//       limitAmount, // amount
-//       generalAdapter1, // adapter
-//       operation.skipRevert,
-//     ],
-//   },
-//   {
-//     type: "paraswapBuy",
-//     args: [
-//       swap.to, // augustus
-//       swap.data, // calldata
-//       srcToken, // sended token
-//       operation.address, // received (destination) token
-//       swap.offsets, // offsets
-//       receiver === paraswapAdapter ? generalAdapter1 : receiver, // receiver
-//       operation.skipRevert,
-//     ],
-//   },
-//   {
-//     type: "erc20Transfer",
-//     args: [
-//       srcToken,
-//       generalAdapter1,
-//       maxUint256,
-//       paraswapAdapter,
-//       operation.skipRevert,
-//     ],
-//   }
-// );
+const GENERAL_ADAPTER = "0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0";
+const PARASWAP_ADAPTER = "0x03b5259Bd204BfD4A616E5B79b0B786d90c6C38f";
+
+const PARASWAP_BASE_URL = "https://api.paraswap.io/swap";
 
 const client = createWalletClient({
   chain: mainnet,
@@ -70,18 +37,12 @@ const client = createWalletClient({
   account: privateKeyToAccount(ACCOUNT_PRIVATE_KEY),
 }).extend(publicActions);
 
+// Approve the General Adapter contract to spend the USDC
 await client.writeContract({
   address: SRC_TOKEN,
   abi: erc20Abi,
   functionName: "approve",
-  args: ["0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0", parseUnits("1000", 6)],
-});
-
-await client.writeContract({
-  address: SRC_TOKEN,
-  abi: erc20Abi,
-  functionName: "approve",
-  args: ["0x03b5259bd204bfd4a616e5b79b0b786d90c6c38f", parseUnits("1000", 6)],
+  args: [GENERAL_ADAPTER, parseUnits("1000", 6)],
 });
 
 const swapSchema = z.object({
@@ -96,6 +57,7 @@ const swapSchema = z.object({
   }),
 });
 
+// Paraswap params
 const params = {
   amount: parseUnits("10", 6).toString(),
   srcToken: SRC_TOKEN,
@@ -103,24 +65,15 @@ const params = {
   destToken: DEST_TOKEN, // USDT
   destDecimals: "6",
   network: "1",
-  slippage: "1000",
+  slippage: "10",
   side: "SELL",
   userAddress: client.account.address,
   version: "6.2", // version allowed by mopho bundler with allowed smart contract augustus
-  // options: {
-  // includeContractMethods: SUPPORTED_CONTRACT_METHODS as unknown as ContractMethod[],
-  // excludeRFQ: true,
-  // ignoreBadUsdPrice: true,
-  // partner: "compound.blue",
-  // maxImpact: 2,
-  // excludeDEXS: ["UniswapV4"],
-  // },
 };
 
-const baseUrl = "https://api.paraswap.io/swap";
-
+// Call paraswap api to get the swap data
 const queryString = new URLSearchParams(params).toString();
-const url = `${baseUrl}?${queryString}`;
+const url = `${PARASWAP_BASE_URL}?${queryString}`;
 
 const req = await fetch(url, {
   method: "GET",
@@ -129,9 +82,10 @@ const req = await fetch(url, {
   },
 });
 
+// Parse the swap data
 const swap = swapSchema.parse(await req.json());
-// console.log("🚀 ~ swap:", swap);
 
+// Build bundle for SDK
 const requirements = new ActionBundleRequirements();
 const bundle = new ActionBundle(
   1,
@@ -141,7 +95,7 @@ const bundle = new ActionBundle(
       args: [
         SRC_TOKEN, // sended token
         parseUnits("10", 6), // amount
-        "0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0", // general adapter
+        GENERAL_ADAPTER, // general adapter
         false, // operation.skipRevert,
       ],
     },
@@ -149,9 +103,9 @@ const bundle = new ActionBundle(
       type: "erc20Transfer",
       args: [
         SRC_TOKEN, // sended token
-        "0x03b5259Bd204BfD4A616E5B79b0B786d90c6C38f", // paraswap recipient
+        PARASWAP_ADAPTER, // paraswap recipient
         parseUnits("10", 6), // amount
-        "0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0", // general adapter
+        GENERAL_ADAPTER, // general adapter
         false, // operation.skipRevert,
       ],
     },
@@ -168,14 +122,25 @@ const bundle = new ActionBundle(
           limitAmount: 4n + 32n * 4n,
           quotedAmount: 4n + 32n * 5n,
         }, // offsets (exact amount in)
-        "0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0", // receiver
+        GENERAL_ADAPTER, // receiver
         false,
+      ],
+    },
+    {
+      type: "erc20Transfer",
+      args: [
+        DEST_TOKEN, // sended token
+        client.account.address, // paraswap recipient
+        parseUnits("10", 6), // amount
+        GENERAL_ADAPTER, // general adapter
+        false, // operation.skipRevert,
       ],
     },
   ],
   requirements
 );
 
+// Build bundler from SDK
 const buildTx = await bundle.tx();
 
 const tx = await client.sendTransaction({
@@ -186,3 +151,37 @@ const tx = await client.sendTransaction({
 });
 
 console.log("🚀 ~ tx:", tx);
+
+// verify balance user
+const balanceSrc = await client.readContract({
+  address: SRC_TOKEN,
+  abi: erc20Abi,
+  functionName: "balanceOf",
+  args: [client.account.address],
+});
+console.log("🚀 ~ balanceSrc:", balanceSrc);
+
+const balanceDest = await client.readContract({
+  address: DEST_TOKEN,
+  abi: erc20Abi,
+  functionName: "balanceOf",
+  args: [client.account.address],
+});
+console.log("🚀 ~ balanceDest:", balanceDest);
+
+// Verify balance general adapter
+const balanceGeneralAdapterSrc = await client.readContract({
+  address: SRC_TOKEN,
+  abi: erc20Abi,
+  functionName: "balanceOf",
+  args: [GENERAL_ADAPTER],
+});
+console.log("🚀 ~ balanceGeneralAdapter src:", balanceGeneralAdapterSrc);
+
+const balanceGeneralAdapterDest = await client.readContract({
+  address: DEST_TOKEN,
+  abi: erc20Abi,
+  functionName: "balanceOf",
+  args: [GENERAL_ADAPTER],
+});
+console.log("🚀 ~ balanceGeneralAdapter dest:", balanceGeneralAdapterDest);
