@@ -1,12 +1,10 @@
 import {
-  createPublicClient,
   erc20Abi,
   http,
   publicActions,
   createWalletClient,
   parseUnits,
-  checksumAddress,
-  type Address,
+  maxUint256,
 } from "viem";
 import { mainnet } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
@@ -62,12 +60,12 @@ const params = {
   amount: parseUnits("10", 6).toString(),
   srcToken: SRC_TOKEN,
   srcDecimals: "6",
-  destToken: DEST_TOKEN, // USDT
+  destToken: DEST_TOKEN,
   destDecimals: "6",
   network: "1",
   slippage: "10",
   side: "SELL",
-  userAddress: client.account.address,
+  userAddress: client.account.address, // paraswap adapter ?
   version: "6.2", // version allowed by mopho bundler with allowed smart contract augustus
 };
 
@@ -116,7 +114,7 @@ const bundle = new ActionBundle(
         swap.txParams.data, // calldata
         SRC_TOKEN, // sended token
         DEST_TOKEN, // received (destination) token
-        true, // entire balance
+        false, // entire balance // ? question romain
         {
           exactAmount: 4n + 32n * 3n,
           limitAmount: 4n + 32n * 4n,
@@ -129,9 +127,9 @@ const bundle = new ActionBundle(
     {
       type: "erc20Transfer",
       args: [
-        DEST_TOKEN, // sended token
-        client.account.address, // paraswap recipient
-        parseUnits("10", 6), // amount
+        DEST_TOKEN,
+        client.account.address,
+        maxUint256, // amount
         GENERAL_ADAPTER, // general adapter
         false, // operation.skipRevert,
       ],

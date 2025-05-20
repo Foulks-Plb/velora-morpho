@@ -16,7 +16,7 @@ const ACCOUNT_PRIVATE_KEY =
   "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"; // Address test from hardhat
 // PUBLIC_KEY: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
 const RPC_URL =
-  "https://virtual.mainnet.rpc.tenderly.co/f737b323-846a-46ed-b6d7-f93e95d62143";
+  "https://virtual.mainnet.rpc.tenderly.co/8c1ba48e-d3fc-4bb6-9f8a-ce8b67e9b2a6";
 const SRC_TOKEN = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"; // USDC
 const DEST_TOKEN = "0xdAC17F958D2ee523a2206206994597C13D831ec7"; // USDT
 
